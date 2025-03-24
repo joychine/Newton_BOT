@@ -1,11 +1,12 @@
-import asyncio,json,random,sys,time
+import asyncio, json, random, sys, time
 from os import path
-from playwright.async_api import async_playwright
 
+from playwright.async_api import async_playwright
 
 MAGICNEWTON_URL = "https://www.magicnewton.com/portal/rewards"
 DEFAULT_SLEEP_TIME = 24 * 60 * 60  # 24 hours in seconds
 RANDOM_EXTRA_DELAY = lambda: random.randint(20, 60) * 60  # 20-60 mins random delay in seconds
+
 
 # 获取用户输入的账号配置，默认生成 cookies 文件路径
 def get_user_accounts():
@@ -33,8 +34,10 @@ def get_user_accounts():
         ACCOUNTS.append({"id": "default", "cookies_file": "cookies.json"})
     return ACCOUNTS
 
+
 async def delay(seconds):
     await asyncio.sleep(seconds)
+
 
 def parse_time_string(time_str):
     try:
@@ -50,6 +53,7 @@ def parse_time_string(time_str):
     except:
         return None
 
+
 async def show_live_countdown(total_ms, account_id):
     total_seconds = total_ms // 1000
     while total_seconds > 0:
@@ -62,6 +66,7 @@ async def show_live_countdown(total_ms, account_id):
         total_seconds -= 1
     print(f"\n[{account_id}] ✅ 时间已到！重试掷骰...")
 
+
 async def get_current_score(page):
     try:
         score = await page.evaluate(
@@ -73,6 +78,7 @@ async def get_current_score(page):
         return score
     except:
         return 0
+
 
 async def press_or_bank(page, roll_count, score, account_id):
     if (roll_count <= 2 and score < 35) or (2 < roll_count < 5 and score < 30):
@@ -96,6 +102,7 @@ async def press_or_bank(page, roll_count, score, account_id):
             }
         """)
         return False
+
 
 async def run_account(account):
     account_id = account["id"]
@@ -123,6 +130,7 @@ async def run_account(account):
     while True:
         try:
             print(f"\033c[{account_id}] 🔄 新的循环开始了...")
+            SLEEP_TIME = DEFAULT_SLEEP_TIME
             async with async_playwright() as p:
                 browser = await p.chromium.launch(
                     headless=True,
@@ -235,24 +243,33 @@ async def run_account(account):
                             time_data = parse_time_string(timer_text)
                             if time_data:
                                 await show_live_countdown(time_data['totalMs'] + 5000, account_id)
+                                SLEEP_TIME = time_data['totalMs'] / 1000
                             else:
                                 print(f"[{account_id}] ⚠️ 无法解析计时器。使用默认睡眠时间.")
                         else:
                             print(f"[{account_id}] ⚠️ 未找到定时器。使用默认睡眠时间.")
                 await browser.close()
 
+                hours = SLEEP_TIME // 3600
+                minutes = (SLEEP_TIME % 3600) // 60
+                seconds = SLEEP_TIME % 60
+                sys.stdout.write(f"\r[{account_id}] ⏳ 下一次运行时间: {hours:02d}:{minutes:02d}:{seconds:02d} ")
+                sleepTimeDesc = f"{hours}时{minutes}分{seconds}秒"
+
                 extra_delay = RANDOM_EXTRA_DELAY()
-                print(f"[{account_id}] 🔄 循环完成。休眠 24 小时 + 随机延迟 {extra_delay // 60} 分钟...")
-                await delay(DEFAULT_SLEEP_TIME + extra_delay)
+                print(f"[{account_id}] 🔄 循环完成。休眠 {sleepTimeDesc} + 随机延迟 {extra_delay // 60} 分钟...后进行下一次任务")
+                await delay(SLEEP_TIME + extra_delay)
         except Exception as error:
             print(f"[{account_id}] ❌ 错误: {error}")
             await delay(60)
+
 
 async def main():
     ACCOUNTS = get_user_accounts()
     print(f"已配置 {len(ACCOUNTS)} 个账号：{[acc['id'] for acc in ACCOUNTS]}")
     tasks = [run_account(account) for account in ACCOUNTS]
     await asyncio.gather(*tasks)
+
 
 if __name__ == "__main__":
     def show_copyright():
@@ -268,4 +285,6 @@ if __name__ == "__main__":
         """
         {Style.RESET_ALL}
         print(copyright_info)
+
+
     asyncio.run(main())

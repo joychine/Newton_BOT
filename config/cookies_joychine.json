@@ -1,0 +1,12 @@
+
+[
+    {
+        "name": "__Secure-next-auth.session-token",
+        "value": "eyJhbGciOiJkaXIiLCJlbmMiOiJBMjU2R0NNIn0..D4uyqdpWaczGvku_.EntcIPDGpDg2BVCsqMV63oCf2h34Jlc2U_SJLODPIta7Yxswz4K89aX2wY8lWiYiyRLh64xAeuLA-1h10P-uNzYtRn39GfBaVDeb2YCq6iD18J3tZe5hQlwgb_eJuj9Qq5LO7ob2be7wWsI2_6nUhRnFOI2jdoIPdDTBQn7bX4l7Lt5X3jQ8A2bWOAnIerQqdOw0wD81IM0-N-1SQPqE0JDyS_l8dYa4miZKKU6OcLP9jcJK3UED_rwkAJu7xUWfqYsYoyrPpBeL8lUQwvbhZuSx6FgW710P4d7pW9chd3s.UPjWJcqeLsz0t6j8xgOIrQ",
+        "domain": ".magicnewton.com",
+        "proxy":"http://127.0.0.1:10031",
+        "path": "/",
+        "secure": true,
+        "httpOnly": true
+    }
+]
